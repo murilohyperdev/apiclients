@@ -1,5 +1,7 @@
 package br.com.hyperdev.apiclients.services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.hyperdev.apiclients.dto.ClientDTO;
 import br.com.hyperdev.apiclients.entities.Client;
 import br.com.hyperdev.apiclients.repositories.ClientRepository;
+import br.com.hyperdev.apiclients.services.exceptions.ResourceNotFoundException;
 
 
 @Service
@@ -23,5 +26,22 @@ public class ClientService {
 		return list.map(client -> new ClientDTO(client));
 	}
 	
+	@Transactional(readOnly = true)
+	public ClientDTO findById(Long id) {
+		Optional<Client> object = repository.findById(id);
+		Client entity = object.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
+		return new ClientDTO(entity);
+	}
 	
+	@Transactional
+	public ClientDTO insert(ClientDTO dto) {
+		Client entity = new Client();
+		entity.setName(dto.getName());
+		entity.setCpf(dto.getCpf());
+		entity.setIncome(dto.getIncome());
+		entity.setBirthDate(dto.getBirthDate());
+		entity.setChildren(dto.getChildren());
+		entity = repository.save(entity);
+		return new ClientDTO(entity);
+	}
 }
